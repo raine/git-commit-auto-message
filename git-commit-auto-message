@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+git_status=$(git status --porcelain | grep -vE '^\s')
+first=$(echo "$git_status" | head -n1)
+filename=$(echo "$first" | awk '{print $NF}')
+
+if echo "$first" | grep -Eq '^\s?M'; then
+  commit_message="update $filename"
+elif echo "$first" | grep -Eq '^\s?A'; then
+  commit_message="add $filename"
+elif echo "$first" | grep -Eq '^\s?D'; then
+  commit_message="delete $filename"
+elif echo "$first" | grep -Eq '^\s?R'; then
+  from=$(echo "$first" | awk '{print $2}')
+  to=$(echo "$first" | awk '{print $4}')
+  commit_message="rename $from to $to"
+else
+  echo "error"
+  exit 1
+fi
+
+git commit -m "$commit_message"
